@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <title>&#65279;</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --moveUp-duration: 1.1s;
+        --moveUp-length: -1400px;
+        --moveDown-duration: 0.3s;
+        --moveDown-length: 100px;
+        --shadow-increase: 10px; /* Скорость полного засветления лампочки */
+        
+        /* Служебные переменные */
+        --initialTopPosition: 0;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        cursor: default;
+        
+        background-color: white;
+        
+        background-image: url('monika_room.png');
+        /* TODO найти получше разрешение (если время будет): https://steamcommunity.com/app/698780/discussions/0/3182216552773371138/ */
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center center;
+      }
+      
+      #lightbulb {
+        width: 250px;
+        height: 250px;
+        
+        background-image: url('bulb_on.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        
+        margin: auto;
+        
+        cursor: pointer;
+        
+        position: relative;
+      }
+      #lightbulb:hover {
+        filter: drop-shadow(0px 0px 15px #ffe639);
+      }
+      #lightbulb:hover {
+        transform: scale(1.02);
+      }
+      #lightbulb.enlarged {
+        transform: scale(1.05);
+      }
+      
+      /* Анимация перемещения вниз */
+      @keyframes moveDown {
+        from { top: 0; }
+        to { top: var(--moveDown-length); }
+      }
+      .move-down {
+        animation: moveDown var(--moveDown-duration) ease forwards;
+      }
+      
+      /* Анимация перемещения вверх */
+      @keyframes moveUp {
+        from { top: calc(100vh - var(--initialTopPosition)); }
+        to { top: var(--moveUp-length); }
+      }
+      .move-up {
+        animation: moveUp var(--moveUp-duration) ease forwards;
+      }
+      
+      /* footer внизу страницы */
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      #darkness {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+      
+      #overlap {
+        position: absolute;
+        background-color: rgb(22, 10, 32);
+        width: 100vw;
+        height: 100vh;
+        
+        opacity: 1;
+        transition: opacity 1s ease;
+      }
+      
+      #hiddenContent {
+        position: absolute;
+        width: 100%;
+        
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+      }
+      
+      #text {
+        text-align: center;
+        font-size: 180%;
+        font-family: "Tiny5", "Calibri", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        color: #fe27ff;
+        text-shadow: 0 0 6px #610363;
+        
+        margin-top: -100px;
+        
+        position: absolute;
+        
+        max-width: 480px;
+      }
+      
+      #arts {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-bottom: -60px;
+      }
+      
+      .art {
+        max-width: 98vw; /* Чтобы не появлялись полосы прокрутки */
+        margin: auto;
+        height: 650px;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hiddenContent">
+      <div id="arts">
+        <img class="art" src="satanya.png" alt="">
+        <img class="art" src="konata.png" alt="">
+      </div>
+      <p id="text">С днём рождения,<br>наш любимый-дорогой Женечка!
+      <br><br>
+      Желаем тебе успешно защитить дип&shy;лом и пе&shy;ре&shy;жить вре&shy;меч&shy;ко в Ижев&shy;ске. Вскоре смо&shy;жем са&shy;ми те&shy;бя обес&shy;пе&shy;чим са&shy;мым луч&shy;шим - лю&shy;бовью, лас&shy;кой и заботой, а с ними и счастьем!
+      <br><br>
+      С ДВАДЦАТИЛЕТИЕМ,<br>НЯШ МИВЫЙ КОТИК!! :333</p>
+    </div>
+    <div id="darkness">
+      <div id="overlap"></div>
+      <!-- TODO Нужно ли добавлять звёздочки или другие sparkles вместе с фиолетовым цветом? (как вот здесь: https://youtu.be/IYp_sg_gkg4?t=14m51s) -->
+      <div id="lightbulb" onmousemove="moveShadow(event)" onclick="lightbulbClick()"></div>
+      <!-- Должен быть звук включения света. Чтобы интерактивность была более выражена -->
+      <!-- Можноооо, чтобы свет включался не сразу на всей веб-странице, а по участкам (будто пока некий «генератор» запускается) -->
+    </div>
+    <script>
+      const lightbulb = document.getElementById("lightbulb");
+      const overlap = document.getElementById("overlap");
+      var lightbulbClicked = false;
+      var shadowIntensity = 0;
+      
+      function increaseShadowIntensity() {
+        if (shadowIntensity < 200) {
+          shadowIntensity += parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--shadow-increase')); // Используем CSS-переменную
+          lightbulb.style.filter = `drop-shadow(0px 0px ${shadowIntensity}px #ffe639)`;
+          requestAnimationFrame(increaseShadowIntensity);
+        }
+      }
+      function lightbulbClick() {
+        if (lightbulb && !lightbulbClicked) {
+          lightbulb.classList.add("enlarged");
+            
+          overlap.style.opacity = "0";
+          lightbulb.onmousemove = null;
+			
+          requestAnimationFrame(increaseShadowIntensity); // Начинаем изменение drop-shadow()
+              lightbulb.style.cursor = "auto";
+          
+          overlap.addEventListener('transitionend', function () {
+            lightbulb.classList.add("move-down");
+            lightbulb.addEventListener("animationend", function (event) {
+              if (event.animationName === "moveDown") {
+                initialTopPosition = lightbulb.getBoundingClientRect().top - lightbulb.parentElement.getBoundingClientRect().top;
+                lightbulb.style.setProperty('--initialTopPosition', initialTopPosition + 'px');
+                lightbulb.classList.remove("move-down");
+                lightbulb.classList.add("move-up");
+                document.title = "С днём рождения!";
+              }
+            });
+            lightbulbClicked = true;
+          });
+        } else {
+          console.error("Элемент #lightbulb не найден на странице.");
+        }
+      }
+      lightbulb.addEventListener("animationstart", function(event) {
+        if (event.animationName === "moveDown") {
+          initialXPosition = lightbulb.getBoundingClientRect().left;
+          initialYPosition = lightbulb.getBoundingClientRect().top;
+        }
+      });
+      lightbulb.addEventListener("animationend", function(event) {
+        if (event.animationName === "moveDown") {
+          initialTopPosition = lightbulb.getBoundingClientRect().top - lightbulb.parentElement.getBoundingClientRect().top;
+          lightbulb.style.setProperty('--initialTopPosition', initialTopPosition + 'px');
+          lightbulb.classList.remove("move-down");
+          lightbulb.classList.add("move-up");
+        }
+      });
+      overlap.addEventListener("transitionend", function(event) {
+        if (event.propertyName === "opacity" && event.target === overlap && overlap.style.opacity === "0") {
+          overlap.style.display = "none";
+        }
+      });
+      
+      lightbulb.addEventListener("animationend", function(event) {
+        if (event.animationName === "moveUp") {
+          lightbulb.style.display = "none";
+        }
+      });
+
+      function moveShadow(event) {
+        var x = event.clientX - lightbulb.getBoundingClientRect().left;
+        var y = event.clientY - lightbulb.getBoundingClientRect().top;
+        var dx = lightbulb.offsetWidth / 2 - x;
+        var dy = lightbulb.offsetHeight / 2 - y;
+        var distance = Math.sqrt(dx * dx + dy * dy);
+        var maxDistance = Math.sqrt(Math.pow(lightbulb.offsetWidth / 2, 2) + Math.pow(lightbulb.offsetHeight / 2, 2));
+        var intensity = 50 * (1 - distance / maxDistance);
+        lightbulb.style.filter = "drop-shadow(0px 0px " + intensity + "px #ffe639)";
+      }
+    </script>
+  </body>
+</html>
+
+<!-- TODO Нужно придумать о чём будет сайт. И о том, почему внизу должна быть лампочка -->
+<!-- TODO Пускай у сайта как бы перегорит свет (а так он изначально был белым, про какую-то утилиту на гитхабе). Как Женя зажгёт свет (и что-то ещё сделает на сайте?), появится истинный контент сайта -->
+<!-- TODO Сделать так, чтобы лампочка наоборот не являлась пикселями, а наоборот показывала всё что скрывается за чёрнотой в веб-странице? -->
+<!-- TODO Лампочка должна оставаться гореть после нажатия -->
+<!--
+
+На веб-странице две тянки. При наведении будет появляться cursor: grab, а при нажатии будет меняться личико
+Тянок — сами рисуем. Они должны быть в рост браузера Жени
+Ссылочку лучше не надо. НО Если идея будет, то можно
+Можем мотивировать перед защитой диплома
+	Будет хорошо как-то связать это с переездом и мотивировать к этому!
+Нарисуем резиночку? Смотря как пойдёт
+-->
+<!--
+Никитя хотель нарисовать лампочку сам (жёлтую и серую), не пиксельную. Он предоставит
+Изначально лампочка серая
+После нажатия в течение секунды она приобретает цвет. И после этого она сначала должна немного вниз идти, и затем летела вверх с ускорением
+Маскоты (две тянки) будут в неко-костюмах (можно) -->
+<!-- По бокам веб-страницы можно атрибуты по Blue Archive, Girls' Frontline, A Hat in Time (Никитя хотел добавить зонтик девочки из A Hat in Time), DDLC? -->
+<!-- Можно добавить какой-нить уникальный шрифт который Жене будет знаком -->
+<!-- Я должен нарисовать Конату. В Неко-белье (https://ae04.alicdn.com/kf/H57ee86f97d2e43ec87a3df60672cbcb65.jpg). Никитина Сатаняша будет в чёрном, моя Коната Изюм будет в белом -->
+<!-- Так оформлять ли или не оформлять текст на веб-странице в виде диалога в DDLC? Или можно как другой диалог..? -->
